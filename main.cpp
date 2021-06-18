@@ -24,9 +24,9 @@ void gen2()
     parser.setUseMask(true);
     parser.setRect(QRect(1950, 0, 480, 256));
     parser.loadMask("d:/develop/dir15/data/14052021_1/FF/00000_00000.txt", QRect(0, 0, 3840, 256));
-    parser.setMax(1024);
-    parser.setAngleRange(0, 361);
-    parser.setThreshold(40);
+    parser.setMax(50000);
+    parser.setAngleRange(0, 360);
+    parser.setThreshold(0.01);
     //d:\develop\dir15\data\M4_\Scans\
     //parser.scanDir("d:\\develop\\dir15\\data\\M4\\Scans", "");
     //parser.scanDir("d:\\develop\\dir15\\data\\M4_\\Scans\\", "");
@@ -35,8 +35,32 @@ void gen2()
     parser.setUseFilter(true);
     parser.setRemove256RemoveLine(true);
     parser.setBlurIter(1);
-    parser.setMedianSize(9);
+    parser.setKernelSize(9);
     parser.scanDir("d:/develop/dir15/data/14052021_1/Scans/", "");
+}
+
+void gen3()
+{
+    ParserPmf parser;
+
+    parser.clearOutputDir();
+
+    //parser.setUseMask(true);
+    parser.setRect(QRect(1750, 0, 350, 256));
+    //parser.loadMask("d:/develop/dir15/data/14052021_1/FF/00000_00000.txt", QRect(0, 0, 3840, 256));
+    parser.setMax(255);
+    parser.setAngleRange(0, 360);
+    parser.setThreshold(0.5);
+    parser.setThresholdAsDynamicRange(true);
+    parser.setNeededWidth(350);
+    //parser.setUseInv(true);
+    //parser.setUseFilter(true);
+    parser.setRemove256RemoveLine(true);
+    //parser.setBlurIter(3);
+    parser.setKernelSize(5);
+    parser.setUseMedianFilter(false);
+    parser.scanDirPgm("d://develop//dir15//data//PGM//Pattern_with_M3", "");
+
 }
 
 int main(int argc, char *argv[])
@@ -45,7 +69,7 @@ int main(int argc, char *argv[])
 
     qDebug("begin...");
 
-    gen2();
+    gen3();
 
     qDebug("end");
 

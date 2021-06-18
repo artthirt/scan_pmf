@@ -6,7 +6,72 @@
 #include <QImage>
 #include <QPainter>
 
+#include <fstream>
+
+#define _USE_MATH_DEFINES
+
+#include <cmath>
+
 const int MaxMedian = 15;
+
+matrixus_t readPgm(const std::string& fileName)
+{
+    using namespace std;
+
+    matrixus_t out;
+
+    fstream fs(fileName, fstream::in | fstream::binary);
+    string s, s1, s2;
+    int w, h, mm;
+    float f;
+    getline(fs, s);
+    do{
+        getline(fs, s1);
+        if(s1[0] == '#') s2 += s1;
+    }while(s1[0] == '#');
+    sscanf(s1.c_str(), "%d %d", &w, &h);
+    getline(fs, s1);
+    sscanf(s1.c_str(), "%d", &mm);
+
+    if(mm < 256){
+        Matrix<uint8_t> m;
+        m.resize(h, w);
+        char ch;
+        int k = 0;
+
+        //cout << s2 << endl;
+
+        uint8_t *F = reinterpret_cast<uint8_t*>(m.ptr());
+        ch = fs.get();
+        while(!fs.eof()){
+            uint8_t rgb;
+            fs.read((char*)&rgb, sizeof(rgb));
+            F[k++] = rgb;
+        }
+        m.convertTo(out);
+    }else{
+        Matrix<uint16_t> m;
+        m.resize(h, w);
+        char ch;
+        int k = 0;
+
+        //cout << s2 << endl;
+
+        uint16_t *F = reinterpret_cast<uint16_t*>(m.ptr());
+        ch = fs.get();
+        while(!fs.eof()){
+            uint16_t rgb;
+            fs.read((char*)&rgb, sizeof(rgb));
+            F[k++] = rgb;
+        }
+        m.convertTo(out);
+    }
+
+    //fs.read((char*)m.data, w * h * 3 * sizeof(float));
+    fs.close();
+
+    return out;
+}
 
 ParserPmf::ParserPmf()
 {
@@ -19,24 +84,48 @@ void ParserPmf::setAngleRange(float a1, float a2)
     mAngleRange[1] = a2;
 }
 
+
+std::vector<float> getGaussLernel(int K, float S = 2)
+{
+    const float pi = 4 * std::atan(1);
+
+    std::vector<float> res;
+    res.resize(K * K);
+
+    float S2 = 2 * S * S;
+    for(int i = -K/2; i <= K/2; ++i){
+        for(int j = -K/2; j <= K/2; ++j){
+            int off = (K/2 + i) * K + (K/2 + j);
+            float s = expf(-(i * i + j * j) / S2);
+            res[off] = s;
+        }
+    }
+    float SS = 0;
+    for(auto f: res){
+        SS += f;
+    }
+    for(auto& f: res){
+        f /= SS;
+    }
+
+    return res;
+}
+
 matrixus_t ParserPmf::filterImage(const matrixus_t &mat)
 {
     matrixus_t res;
-    int h = mat.size();
-    int w = mat[0].size();
+    int h = mat.rows;
+    int w = mat.cols;
 
-    res.resize(h);
-    for(size_t i = 0; i < h; ++i){
-        res[i].resize(w, 0);
-    }
+    res.resize(h, w);
 
     for(int i = 1; i < h - 1; ++i){
         for(int j = 1; j < w - 1; ++j){
-            float t = mat[i - 1][j];
-            float l = mat[i][j - 1];
-            float r = mat[i][j + 1];
-            float b = mat[i - 1][j];
-            float c = mat[i][j];
+            float t = mat.at(i - 1, j);
+            float l = mat.at(i, j - 1);
+            float r = mat.at(i, j + 1);
+            float b = mat.at(i - 1, j);
+            float c = mat.at(i, j);
 
             float mean4 = (t + l + r + b) / 4;
             if(c > mean4 * 1.5)
@@ -59,22 +148,44 @@ matrixus_t ParserPmf::filterImage(const matrixus_t &mat)
             }
         }
     }
-    int szM = mMedianSize * mMedianSize;
-    int off = mMedianSize / 2;
+    int szM = mKernelSize * mKernelSize;
+    int off = mKernelSize / 2;
     int beg = -off;
-    int end = beg + mMedianSize;
+    int end = beg + mKernelSize;
+
+    if(mUseMedian){
 #pragma omp parallel for
-    for(int i = off; i < h - off; ++i){
-        for(int j = off; j < w - off; ++j){
-            float srt[MaxMedian * MaxMedian];
-            int it = 0;
-            for(int k = beg; k < end; ++k){
-                for(int l = beg; l < end; ++l){
-                    srt[it++] = mat[i + k][j + l];
+        for(int i = off; i < h - off; ++i){
+            for(int j = off; j < w - off; ++j){
+                float srt[MaxMedian * MaxMedian];
+                int it = 0;
+                for(int k = beg; k < end; ++k){
+                    for(int l = beg; l < end; ++l){
+                        srt[it++] = mat.at(i + k, j + l);
+                    }
                 }
+                std::sort(&srt[0], &srt[szM]);
+                res.at(i, j) = srt[szM/2];
             }
-            std::sort(&srt[0], &srt[szM]);
-            res[i][j] = srt[szM/2];
+        }
+    }else{
+
+        std::vector<float> gaussKernel = getGaussLernel(mKernelSize);
+
+//#pragma omp parallel for
+        for(int i = off; i < h - off; ++i){
+            for(int j = off; j < w - off; ++j){
+                float Sum = 0;
+                int cnt = 0;
+                for(int k = beg; k < end; ++k){
+                    for(int l = beg; l < end; ++l){
+                        int id = (k + mKernelSize/2) * mKernelSize + (l + mKernelSize/2);
+                        Sum += gaussKernel[id] *  mat.at(i + k, j + l);
+                        cnt++;
+                    }
+                }
+                res.at(i, j) = Sum;
+            }
         }
     }
     return res;
@@ -82,9 +193,9 @@ matrixus_t ParserPmf::filterImage(const matrixus_t &mat)
 
 void ParserPmf::applyInv(matrixus_t &mat, int max)
 {
-    for(int i = 0; i < mat.size(); ++i){
-        for(int j = 0; j < mat[i].size(); ++j){
-            mat[i][j] = max - mat[i][j];
+    for(int i = 0; i < mat.rows; ++i){
+        for(int j = 0; j < mat.cols; ++j){
+            mat.at(i, j) = max - mat.at(i, j);
         }
     }
 }
@@ -92,8 +203,8 @@ void ParserPmf::applyInv(matrixus_t &mat, int max)
 void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
                             bool useMask, const QRect &rect)
 {
-    int h = mat.size();
-    int w = mat[0].size();
+    int h = mat.rows;
+    int w = mat.cols;
 
     if(mMax < 0)
         mMax = max;
@@ -112,6 +223,15 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
         applyRemove256(filt);
     }
 
+    if(mThreshold > 0){
+        float fMin = mMax * mThreshold;
+        if(mThresholdAsDynamicRange){
+            filt.dynamicRange(fMin, mMax, 0, mMax);
+        }else{
+            filt.threshold(fMin, 0);
+        }
+    }
+
     if(mUseFilter){
         for(int i = 0; i < mBlurIter; ++i)
             filt = filterImage(filt);
@@ -122,7 +242,8 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
     for(int i = 0; i < h; ++i){
         ushort *d = (ushort*)im.scanLine(i);
         for(int j = 0; j < w; ++j){
-            d[j] = std::max(0.f, std::min(65535.f, 1.f * filt[i][j]/mMax * 65535.f));
+            float val = filt.at(i, j);
+            d[j] = std::max(0.f, std::min(65535.f, 1.f * val * mMax));
         }
     }
 
@@ -156,28 +277,42 @@ matrixus_t ParserPmf::scanFile(const QString &pmf, const QString &dsc, int &max,
                                const QRect &rect, float Angle, bool save)
 {
     mData.clear();
-    mData.reserve(1000 * 1000);
 
-    QFile f(pmf);
-    if(!f.open(QIODevice::ReadOnly))
-        return matrixus_t();
+    if(pmf.endsWith(".pgm")){
+        mData = readPgm(pmf.toStdString());
+        max = 255;
+    }else{
+        QFile f(pmf);
+        if(!f.open(QIODevice::ReadOnly))
+            return matrixus_t();
 
-    QString s = f.readAll();
-    mNumlist1 = s.splitRef("\n");
+        QVector<QStringRef> mNumlist1;
+        QVector<QStringRef> mNumlist2;
 
-    max = -99999999;
-    for(auto a: mNumlist1){
-        mNumlist2 = a.split(" ");
-        mDataLine.clear();
-        for(auto b: mNumlist2){
-            if(!b.trimmed().isEmpty()){
-                int num = b.toInt();
-                max = qMax(max, num);
-                mDataLine.push_back(num);
+        QString s = f.readAll();
+        mNumlist1 = s.splitRef("\n");
+
+        max = -99999999;
+        int h = mNumlist1.size();
+        int w = 0, y = 0;
+        for(auto a: mNumlist1){
+            mNumlist2 = a.split(" ");
+            if(!w){
+                w = mNumlist2.size();
+                mData.resize(h, w);
             }
+            int x = 0;
+            for(auto b: mNumlist2){
+                if(!b.trimmed().isEmpty()){
+                    int num = b.toInt();
+                    max = qMax(max, num);
+                    mData.at(y, x) = num;
+                }
+                x++;
+            }
+            y++;
         }
-        if(!mDataLine.empty())
-            mData.push_back(mDataLine);
+        f.close();
     }
     QFileInfo fi(pmf);
     QString newfn = mSaveDir + "/image_" + fi.baseName() + ".tif";
@@ -195,12 +330,11 @@ matrixus_t ParserPmf::scanFile(const QString &pmf, const QString &dsc, int &max,
         newfn = mSaveDir + "/image_" + fi.baseName() + QString("_%1").arg(angle, 8, 'f', 2, QLatin1Char('0')) + ".tif";
     }
 
-    qDebug("size of data [%dx%d]; max %d; angle %f", mData.size(), mData[0].size(), max, angle);
+    qDebug("size of data [%dx%d]; max %d; angle %f", mData.rows, mData.cols, max, angle);
 
     if(save)
         saveToImage(newfn, mData, max, mUseMask, rect);
 
-    f.close();
 
     return mData;
 }
@@ -253,21 +387,49 @@ void ParserPmf::scanDir(const QString &path, const QString &prefix)
     }
 }
 
-void ParserPmf::apply(matrixus_t &im)
+void ParserPmf::scanDirPgm(const QString &path, const QString &prefix)
 {
-    if(mMask.size() != im.size() && mMask[0].size() != im[0].size())
-        return;
+    QDir dir(path);
 
-    for(int i = 0; i < mMask.size(); ++i){
-        for(int j = 0; j < mMask[i].size(); ++j){
-            im[i][j] = std::max(0.f, mMask[i][j] - im[i][j]);
-            if(im[i][j] < mThreshold)
-                im[i][j] = 0;
-//            if(im[i][j] >= mMask[i][j]){
-//                im[i][j] = 0;
-//            }
+    QStringList pgm;
+
+    for(int i = 0; i < dir.count(); ++i){
+        QString fn = dir[i];
+        QFileInfo fi(fn);
+        if(!fn.contains(prefix)){
+            continue;
+        }
+        if(fi.suffix() == "pgm"){
+            pgm << fn;
         }
     }
+    for(int i = 0; i < pgm.size(); ++i){
+        float t = 1. * i / (pgm.size());
+        float angle = -1;
+        if(mAngleRange[1] > 0){
+            angle = mAngleRange[0] + t * (mAngleRange[1] - mAngleRange[0]);
+        }
+        int max;
+        scanFile(path + "/" + pgm[i], "", max, mRect, angle, true);
+        //scanFiles(path + "/" + pmf[i], path + "/" + dsc[i], QRect(), true, true);
+    }
+}
+
+void ParserPmf::apply(matrixus_t &im)
+{
+    if(mMask.rows != im.rows && mMask.cols != im.cols)
+        return;
+
+    float m1 = 999999, m2 = -9999999;
+    for(int i = 0; i < mMask.rows; ++i){
+        for(int j = 0; j < mMask.cols; ++j){
+            im.at(i, j) = im.at(i, j) / mMask.at(i, j);
+            im.at(i, j) = std::max(0.f, 1.f - im.at(i, j));
+            m1 = std::min(m1, im.at(i, j));
+            m2 = std::max(m2, im.at(i, j));
+        }
+    }
+    qDebug("minmax %f %f", m1, m2);
 }
 
 void ParserPmf::loadMask(const QString &mask, const QRect &rect)
@@ -278,7 +440,7 @@ void ParserPmf::loadMask(const QString &mask, const QRect &rect)
     int max;
     mMask = scanFile(mask, "", max, QRect());
 
-    if(rect.isNull() || rect.width() > mMask[0].size() || rect.height() > mMask.size()){
+    if(rect.isNull() || rect.width() > mMask.cols || rect.height() > mMask.rows){
         return;
     }
 
@@ -288,13 +450,10 @@ void ParserPmf::loadMask(const QString &mask, const QRect &rect)
     int h = rect.height();
 
     matrixus_t msk;
-    msk.resize(h);
-    for(auto &it: msk){
-        it.resize(w);
-    }
+    msk.resize(h, w);
     for(int j = y, k = 0; j < y + h; ++j, ++k){
         for(int i = x, l = 0; i < x + w; ++i, ++l){
-            msk[k][l] = mMask[j][i];
+            msk.at(k, l) = mMask.at(j, i);
         }
     }
     mMask = msk;
@@ -341,14 +500,24 @@ void ParserPmf::setThreshold(float val)
     mThreshold = val;
 }
 
+void ParserPmf::setThresholdAsDynamicRange(bool val)
+{
+    mThresholdAsDynamicRange = val;
+}
+
 void ParserPmf::setBlurIter(int val)
 {
     mBlurIter = val;
 }
 
-void ParserPmf::setMedianSize(int val)
+void ParserPmf::setKernelSize(int val)
 {
-    mMedianSize = val;
+    mKernelSize = val;
+}
+
+void ParserPmf::setUseMedianFilter(bool val)
+{
+    mUseMedian = val;
 }
 
 void ParserPmf::clearOutputDir()
@@ -366,17 +535,17 @@ void ParserPmf::clearOutputDir()
 void ParserPmf::applyRemove256(matrixus_t &m)
 {
     for(int i = 0; i < 2; i++) {
-        for(int j = 0; j < m[i].size(); ++j){
-            m[i][j] = 0;
-            m[m.size() - i - 1][j] = 0;
+        for(int j = 0; j < m.cols; ++j){
+            m.at(i, j) = 0;
+            m.at(m.rows - i - 1, j) = 0;
         }
     }
-    for(int i = 0; i < m.size(); i++) {
-        for(int j = 0; j < m[i].size(); j += 256){
-            m[i][j + 0] = 0;
-            if(j > 0 && j < m[i].size() - 1){
-                m[i][j - 1] = (m[i][j - 2] + m[i][j + 2])/2;
-                m[i][j] = (m[i][j - 1] + m[i][j + 2])/2;
+    for(int i = 0; i < m.rows; i++) {
+        for(int j = 0; j < m.cols; j += 256){
+            m.at(i, j + 0) = 0;
+            if(j > 0 && j < m.cols - 1){
+                m.at(i, j - 1) = (m.at(i, j - 2) + m.at(i, j + 2))/2;
+                m.at(i, j) = (m.at(i, j - 1) + m.at(i, j + 2))/2;
             }
 //            if(j > 0 && j < m[i].size() - 1){
 //                m[i][j - 1] = 0;
