@@ -200,6 +200,15 @@ void ParserPmf::applyInv(matrixus_t &mat, int max)
     }
 }
 
+void nonLinear(matrixus_t& IO, float Max)
+{
+    for(int i = 0; i < IO.total(); ++i){
+        float t = IO[i] / Max;
+        t = sqrt(t);
+        IO[i] = t * Max;
+    }
+}
+
 void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
                             bool useMask, const QRect &rect)
 {
@@ -230,6 +239,10 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
         }else{
             filt.threshold(fMin, 0);
         }
+    }
+
+    if(mUseNonLinearLut){
+        nonLinear(filt, mMax);
     }
 
     if(mUseFilter){
@@ -518,6 +531,11 @@ void ParserPmf::setKernelSize(int val)
 void ParserPmf::setUseMedianFilter(bool val)
 {
     mUseMedian = val;
+}
+
+void ParserPmf::setUseNonLinearLut(bool val)
+{
+    mUseNonLinearLut = val;
 }
 
 void ParserPmf::clearOutputDir()

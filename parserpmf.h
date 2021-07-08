@@ -110,6 +110,7 @@ public:
     void setBlurIter(int val);
     void setKernelSize(int val);
     void setUseMedianFilter(bool val);
+    void setUseNonLinearLut(bool val);
 
     void clearOutputDir();
 
@@ -130,6 +131,7 @@ private:
     int mBlurIter = 5;
     int mKernelSize = 3;
     bool mUseMedian = true;
+    bool mUseNonLinearLut = false;
 
     void applyRemove256(matrixus_t& m);
 };
