@@ -1,5 +1,7 @@
 #include "outputimage.h"
 
+#include <QGuiApplication>
+#include <QScreen>
 #include <QMouseEvent>
 
 #define SHOWGLERROR()  qDebug("line %d: glGetError=%d", __LINE__, glGetError())
@@ -90,16 +92,18 @@ void OutputImage::drawTexture()
 
     //showError(0);
 
+    glUniform1i(mTexSampler, 1);
+
     if(mTexGen){
         //SHOWGLERROR();
-        glEnable(GL_TEXTURE_2D);
 //        glBindTexture(GL_TEXTURE_2D, mTexGen);
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE1);
         glEnable(GL_TEXTURE_2D);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo_buffer);
         glBindTexture(GL_TEXTURE_2D, mTexGen);
-        glTexImage2D(GL_TEXTURE_2D, 0, mIFmt, mSizeImage.width, mSizeImage.height, 0, mFmt, mTp, 0);
-        //SHOWGLERROR();
+        //glTexImage2D(GL_TEXTURE_2D, 0, mIFmt, mSizeImage.width, mSizeImage.height, 0, mFmt, mTp, 0);
+
+        SHOWGLERROR();
     }
     glEnableVertexAttribArray(mVecAttrib);
     glVertexAttribPointer(mVecAttrib, 3, GL_FLOAT, false, 0, mVecA.data());
@@ -160,18 +164,21 @@ void OutputImage::generateTexture()
         //SHOWGLERROR();
         if(pbo_buffer){
             glDeleteBuffers(1, &pbo_buffer);
+            pbo_buffer = 0;
         }
 
-        mSizeImage = mImage.size();
         GLint bsize;
         glGenBuffers(1, &pbo_buffer);
 
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo_buffer);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glBufferData(GL_PIXEL_UNPACK_BUFFER,
-                     GLsizeiptr(4 * d) * mSizeImage.width * mSizeImage.height, nullptr, GL_STREAM_COPY);
-        glGetBufferParameteriv(GL_PIXEL_UNPACK_BUFFER, GL_BUFFER_SIZE, &bsize);
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+//        QSize sz = QGuiApplication::primaryScreen()->size() * 2;
+//        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo_buffer);
+//        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+//        glBufferData(GL_PIXEL_UNPACK_BUFFER,
+//                     GLsizeiptr(3) * sz.width() * sz.height(), nullptr, GL_STREAM_COPY);
+//        glGetBufferParameteriv(GL_PIXEL_UNPACK_BUFFER, GL_BUFFER_SIZE, &bsize);
+//        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+        mSizeImage = mImage.size();
         //SHOWGLERROR();
     }
 
@@ -258,9 +265,6 @@ void OutputImage::initializeGL()
 void OutputImage::resizeGL(int w, int h)
 {
     QOpenGLWidget::resizeGL(w, h);
-
-    mIsTexUpdate = true;
-    mSizeImage = Size();
 
     setViewport(w, h);
 }

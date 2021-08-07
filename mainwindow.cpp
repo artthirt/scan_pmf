@@ -38,11 +38,13 @@ public:
                 if(ret.empty())
                     return ;
 
-                Mat mat(ret.rows, ret.cols, CV_16U);
+                Mat mat(ret.rows, ret.cols, CV_16UC3);
 
                 uint16_t* put = reinterpret_cast<uint16_t*>(mat.ptr(0));
                 for(int i = 0; i < ret.total(); ++i){
-                    put[i] = 65535. / max * ret[i];
+                    put[i * 3 + 0] = 65535. / max * ret[i];
+                    put[i * 3 + 1] = put[i * 3 + 0];
+                    put[i * 3 + 2] = put[i * 3 + 0];
                 }
                 if(mOutput){
                     mOutput->setImage(mat);
@@ -58,7 +60,8 @@ public:
                     type = CV_8UC3;
                 }
                 if(image.format() == QImage::Format_Grayscale16){
-                    type = CV_16U;
+                    image.convertTo(QImage::Format_RGB888);
+                    type = CV_8UC3;
                 }
 
                 Mat mat(image.height(), image.width(), type, image.bits());
