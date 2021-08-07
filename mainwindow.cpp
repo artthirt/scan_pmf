@@ -168,6 +168,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     updateModel();
 
+    if(!mMaskFile.isEmpty()){
+        mWorker->loadMask(mMaskFile, 0);
+    }
+
     connect(&mTimer, &QTimer::timeout, this, &MainWindow::onTimeout);
     mTimer.start(200);
 
@@ -200,7 +204,10 @@ void MainWindow::on_pbOpenMask_clicked()
                                                     "*.pgm; *.pmf");
 
     if(!sl.isEmpty()){
+        mMaskFile = sl;
+        ui->lineEditMask->setText(mMaskFile);
         mWorker->loadMask(sl, 0);
+        saveSettings();
     }
 }
 
@@ -235,6 +242,7 @@ void MainWindow::onTimeout()
 
 void MainWindow::updateModel()
 {
+    ui->lineEditMask->setText(mMaskFile);
     if(!mFileList.empty()){
         mModelInput.clear();
 
@@ -263,6 +271,7 @@ void MainWindow::loadSettings()
     QSettings settings("settings.ini", QSettings::IniFormat);
 
     mFileDir = settings.value("filedir").toString();
+    mMaskFile = settings.value("filemask").toString();
     mFileList = settings.value("filelist").toStringList();
 }
 
@@ -271,6 +280,7 @@ void MainWindow::saveSettings()
     QSettings settings("settings.ini", QSettings::IniFormat);
 
     settings.setValue("filedir", mFileDir);
+    settings.setValue("filemask", mMaskFile);
     settings.setValue("filelist", mFileList);
 }
 
@@ -295,6 +305,7 @@ void MainWindow::on_pbStart_clicked()
         mWorker->parser->setUseFilter(ui->chbUseFilter->isChecked());
         mWorker->parser->setBlurIter(ui->sbIterFilter->value());
         mWorker->parser->setKernelSize(ui->sbKernelSize->value());
+        mWorker->parser->setAngleRange(ui->dsbAngleStart->value(), ui->dsbAngleEnd->value());
         if(ui->chbUseNeededWidth->isChecked()){
             mWorker->parser->setNeededWidth(ui->sbNeededWidth->value());
         }
@@ -306,6 +317,7 @@ void MainWindow::on_pbStart_clicked()
             rect.setHeight(ui->sbHRect->value());
             mWorker->parser->setRect(rect);
         }
+        mWorker->parser->setThreshold(ui->chbUseThreshold->isChecked()? ui->dsbTresh->value() : 0);
 
         mWorker->Start(mFileList, ui->lineEditSaveDir->text());
     }

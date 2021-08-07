@@ -45,6 +45,7 @@ private:
     QStringList mFileList;
     QStringList mFileOutputList;
     QString mFileDir;
+    QString mMaskFile;
     QStandardItemModel mModelInput;
     QStandardItemModel mModelOutput;
 
