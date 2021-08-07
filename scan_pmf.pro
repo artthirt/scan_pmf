@@ -1,4 +1,4 @@
-QT += gui
+QT += gui widgets opengl
 
 CONFIG += c++11 console
 CONFIG -= app_bundle
@@ -9,6 +9,9 @@ CONFIG -= app_bundle
 
 SOURCES += \
         main.cpp \
+        mainwindow.cpp \
+        mat.cpp \
+        outputimage.cpp \
         parserpmf.cpp
 
 QMAKE_CXXFLAGS += /openmp
@@ -19,4 +22,13 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    mainwindow.h \
+    mat.h \
+    outputimage.h \
     parserpmf.h
+
+FORMS += \
+    mainwindow.ui
+
+RESOURCES += \
+    res.qrc

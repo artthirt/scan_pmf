@@ -290,7 +290,7 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
 }
 
 matrixus_t ParserPmf::scanFile(const QString &pmf, const QString &dsc, int &max,
-                               const QRect &rect, float Angle, bool save)
+                               const QRect &rect, float Angle, bool save, QString *output)
 {
     mData.clear();
 
@@ -348,9 +348,13 @@ matrixus_t ParserPmf::scanFile(const QString &pmf, const QString &dsc, int &max,
 
     qDebug("size of data [%dx%d]; max %d; angle %f", mData.rows, mData.cols, max, angle);
 
-    if(save)
+    if(save){
         saveToImage(newfn, mData, max, mUseMask, rect);
+    }
 
+    if(output){
+        *output = newfn;
+    }
 
     return mData;
 }
@@ -409,6 +413,8 @@ void ParserPmf::scanDirPgm(const QString &path, const QString &prefix)
 
     QStringList pgm;
 
+    mFilesOutput.clear();
+
     for(int i = 0; i < dir.count(); ++i){
         QString fn = dir[i];
         QFileInfo fi(fn);
@@ -426,7 +432,31 @@ void ParserPmf::scanDirPgm(const QString &path, const QString &prefix)
             angle = mAngleRange[0] + t * (mAngleRange[1] - mAngleRange[0]);
         }
         int max;
-        scanFile(path + "/" + pgm[i], "", max, mRect, angle, true);
+        QString file = path + "/" + pgm[i];
+        QString output;
+        scanFile(file, "", max, mRect, angle, true, &output);
+        mFilesOutput.push_back(output);
+        mProgress = 1. * i / (pgm.size() - 1);
+        //scanFiles(path + "/" + pmf[i], path + "/" + dsc[i], QRect(), true, true);
+    }
+}
+
+void ParserPmf::scanDirPgm(const QStringList &pgm, const QString &prefix)
+{
+    mFilesOutput.clear();
+
+    for(int i = 0; i < pgm.size(); ++i){
+        float t = 1. * i / (pgm.size());
+        float angle = -1;
+        if(mAngleRange[1] > 0){
+            angle = mAngleRange[0] + t * (mAngleRange[1] - mAngleRange[0]);
+        }
+        int max;
+        QString file = pgm[i];
+        QString output;
+        scanFile(file, "", max, mRect, angle, true, &output);
+        mFilesOutput.push_back(output);
+        mProgress = 1. * i / (pgm.size() - 1);
         //scanFiles(path + "/" + pmf[i], path + "/" + dsc[i], QRect(), true, true);
     }
 }
@@ -458,6 +488,7 @@ void ParserPmf::loadMask(const QString &mask, const QRect &rect)
     mUseInv = false;
     int max;
     mMask = scanFile(mask, "", max, QRect());
+    mMaximumMask = max;
 
     if(rect.isNull() || rect.width() > mMask.cols || rect.height() > mMask.rows){
         return;

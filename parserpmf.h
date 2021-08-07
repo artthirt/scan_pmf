@@ -4,7 +4,7 @@
 #include <QVector>
 #include <QRect>
 #include <cstdint>
-
+#include <QImage>
 
 template<typename T>
 class Matrix{
@@ -81,6 +81,8 @@ public:
 
     void setAngleRange(float a1, float a2);
 
+    float maximum() const { return mMax; }
+
     matrixus_t filterImage(const matrixus_t& mat);
 
     void applyInv(matrixus_t& mat, int max);
@@ -88,14 +90,28 @@ public:
     void saveToImage(const QString &fn, const matrixus_t& mat, int max, bool useMask,
                      const QRect& rect);
 
-    matrixus_t scanFile(const QString& pmf, const QString& dsc, int& max, const QRect& rect, float Angle = -1, bool save = false);
+    matrixus_t scanFile(const QString& pmf, const QString& dsc,
+                        int& max, const QRect& rect,
+                        float Angle = -1, bool save = false,
+                        QString* output = nullptr);
 
     void scanDir(const QString& path, const QString& prefix);
     void scanDirPgm(const QString& path, const QString& prefix);
+    void scanDirPgm(const QStringList& files, const QString& prefix);
 
     void applyMask(matrixus_t& im);
 
     void loadMask(const QString& mask, const QRect& rect);
+    matrixus_t mask() const {
+        return mMask;
+    }
+    float MaximumMask() const{
+        return mMaximumMask;
+    }
+
+    float progress() const {
+        return mProgress;
+    }
 
     void setUseMask(bool val);
 
@@ -112,7 +128,15 @@ public:
     void setUseMedianFilter(bool val);
     void setUseNonLinearLut(bool val);
 
+    void setSaveDir(const QString& dir){
+        mSaveDir = dir;
+    }
+
     void clearOutputDir();
+
+    QStringList filesOutputs() const {
+        return mFilesOutput;
+    }
 
 private:
     matrixus_t mData;
@@ -123,6 +147,7 @@ private:
     bool mUseMask = false;
     matrixus_t mMask;
     float mMax = -1;
+    float mMaximumMask = 0;
     QString mSaveDir = "data/";
     float mAngleRange[2] = {0, 0};
     bool mRemove256BoxLine = false;
@@ -132,6 +157,9 @@ private:
     int mKernelSize = 3;
     bool mUseMedian = true;
     bool mUseNonLinearLut = false;
+    float mProgress = 0;
+
+    QStringList mFilesOutput;
 
     void applyRemove256(matrixus_t& m);
 };

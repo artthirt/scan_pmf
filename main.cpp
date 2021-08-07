@@ -1,4 +1,7 @@
 #include <QCoreApplication>
+#include <QApplication>
+
+#include "mainwindow.h"
 
 #include "parserpmf.h"
 
@@ -91,6 +94,7 @@ void gen4()
 
 int main(int argc, char *argv[])
 {
+#if 0
     QCoreApplication a(argc, argv);
 
     qDebug("begin...");
@@ -100,4 +104,12 @@ int main(int argc, char *argv[])
     qDebug("end");
 
     return 0;
+#else
+    QApplication app(argc, argv);
+
+    MainWindow w;
+    w.show();
+
+    return app.exec();
+#endif
 }
