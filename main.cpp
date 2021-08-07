@@ -64,13 +64,38 @@ void gen3()
 
 }
 
+void gen4()
+{
+    ParserPmf parser;
+
+    parser.clearOutputDir();
+
+    parser.setUseMask(true);
+    parser.setRect(QRect(1178, 0, 540, 256));
+    parser.loadMask("d:\\develop\\dir15\\data\\PGM 2\\Pattern_FF\\0000.pgm", QRect(0, 0, 3840, 256));
+    parser.setMax(255);
+    parser.setUseInv(true);
+    parser.setAngleRange(0, 360);
+    //parser.setThreshold(0.1);
+    //parser.setThresholdAsDynamicRange(true);
+    parser.setNeededWidth(540);
+    parser.setUseFilter(true);
+    //parser.setRemove256RemoveLine(true);
+    //parser.setBlurIter(1);
+    parser.setKernelSize(5);
+    //parser.setUseNonLinearLut(true);
+    //parser.setUseMedianFilter(false);
+    parser.scanDirPgm("d:\\develop\\dir15\\data\\PGM 2\\Pattern\\", "");
+
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
     qDebug("begin...");
 
-    gen3();
+    gen4();
 
     qDebug("end");
 

@@ -93,7 +93,7 @@ public:
     void scanDir(const QString& path, const QString& prefix);
     void scanDirPgm(const QString& path, const QString& prefix);
 
-    void apply(matrixus_t& im);
+    void applyMask(matrixus_t& im);
 
     void loadMask(const QString& mask, const QRect& rect);
 

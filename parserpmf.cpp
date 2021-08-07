@@ -170,7 +170,7 @@ matrixus_t ParserPmf::filterImage(const matrixus_t &mat)
         }
     }else{
 
-        std::vector<float> gaussKernel = getGaussLernel(mKernelSize);
+        std::vector<float> gaussKernel = getGaussLernel(mKernelSize, 10);
 
 //#pragma omp parallel for
         for(int i = off; i < h - off; ++i){
@@ -220,12 +220,12 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
 
     matrixus_t filt = mat;
 
-    if(mUseInv){
-        applyInv(filt, max);
+    if(useMask){
+        applyMask(filt);
     }
 
-    if(useMask){
-        apply(filt);
+    if(mUseInv){
+        applyInv(filt, max);
     }
 
     if(mRemove256BoxLine){
@@ -278,7 +278,10 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
         QImage out(mNeededWidth, mNeededWidth, QImage::Format_Grayscale16);
         QPainter painter(&out);
         painter.fillRect(out.rect(), Qt::black);
-        painter.drawImage(0, mNeededWidth/2 - im.height()/2, im);
+//        painter.translate(out.width()/2, out.height()/2);
+//        painter.rotate(90);
+//        painter.translate(-out.width()/2, -out.height()/2);
+        painter.drawImage(0, out.height()/2 - im.height()/2, im);
         out.save(fn);
         return;
     }
@@ -428,7 +431,7 @@ void ParserPmf::scanDirPgm(const QString &path, const QString &prefix)
     }
 }
 
-void ParserPmf::apply(matrixus_t &im)
+void ParserPmf::applyMask(matrixus_t &im)
 {
     if(mMask.rows != im.rows && mMask.cols != im.cols)
         return;
@@ -436,8 +439,11 @@ void ParserPmf::apply(matrixus_t &im)
     float m1 = 999999, m2 = -9999999;
     for(int i = 0; i < mMask.rows; ++i){
         for(int j = 0; j < mMask.cols; ++j){
-            im.at(i, j) = im.at(i, j) / mMask.at(i, j);
-            im.at(i, j) = std::max(0.f, 1.f - im.at(i, j));
+            float M = mMask.at(i, j);
+            //M = mMax - M;
+            M = fmaxf(1, M);
+            float var = im.at(i, j) / M;
+            im.at(i, j) = mMax * std::max(0.f, var);
             m1 = std::min(m1, im.at(i, j));
             m2 = std::max(m2, im.at(i, j));
         }
