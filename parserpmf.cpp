@@ -193,6 +193,7 @@ matrixus_t ParserPmf::filterImage(const matrixus_t &mat)
 
 void ParserPmf::applyInv(matrixus_t &mat, int max)
 {
+#pragma omp parallel for
     for(int i = 0; i < mat.rows; ++i){
         for(int j = 0; j < mat.cols; ++j){
             mat.at(i, j) = max - mat.at(i, j);
@@ -200,12 +201,42 @@ void ParserPmf::applyInv(matrixus_t &mat, int max)
     }
 }
 
-void nonLinear(matrixus_t& IO, float Max)
+void nonLinear(matrixus_t& IO, float Max, int type)
 {
-    for(int i = 0; i < IO.total(); ++i){
-        float t = IO[i] / Max;
-        t = sqrt(t);
-        IO[i] = t * Max;
+    if(type == 0){
+#pragma omp parallel for
+        for(int i = 0; i < IO.total(); ++i){
+            float t = IO[i] / Max;
+            t = (t * t);
+            IO[i] = t * Max;
+        }
+    }
+    if(type == 1){
+#pragma omp parallel for
+        for(int i = 0; i < IO.total(); ++i){
+            float t = IO[i] / Max;
+            t = sqrt(t);
+            IO[i] = t * Max;
+        }
+    }
+    if(type == 2){
+#pragma omp parallel for
+        for(int i = 0; i < IO.total(); ++i){
+            float t = IO[i] / Max;
+            t = 0.5 + 0.5 * sin(M_PI * (t - 0.5));
+            IO[i] = t * Max;
+        }
+    }
+}
+
+void applySub(matrixus_t &im, float sub)
+{
+#pragma omp parallel for
+    for(int i = 0; i < im.rows; ++i){
+        for(int j = 0; j < im.cols; ++j){
+            float var = im.at(i, j) - sub;
+            im.at(i, j) = std::max(0.f, var);
+        }
     }
 }
 
@@ -219,6 +250,10 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
         mMax = max;
 
     matrixus_t filt = mat;
+
+    if(mSub){
+        applySub(filt, mSub);
+    }
 
     if(useMask){
         applyMask(filt);
@@ -242,7 +277,7 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
     }
 
     if(mUseNonLinearLut){
-        nonLinear(filt, mMax);
+        nonLinear(filt, mMax, mFunction);
     }
 
     if(mUseFilter){
@@ -540,6 +575,11 @@ void ParserPmf::setMax(float val)
     mMax = val;
 }
 
+void ParserPmf::setSub(float val)
+{
+    mSub = val;
+}
+
 void ParserPmf::setRemove256RemoveLine(bool val)
 {
     mRemove256BoxLine = val;
@@ -575,6 +615,11 @@ void ParserPmf::setUseNonLinearLut(bool val)
     mUseNonLinearLut = val;
 }
 
+void ParserPmf::setSetNonLinearFun(int fun)
+{
+    mFunction = fun;
+}
+
 void ParserPmf::clearOutputDir()
 {
     QDir dir(mSaveDir);
@@ -589,12 +634,14 @@ void ParserPmf::clearOutputDir()
 
 void ParserPmf::applyRemove256(matrixus_t &m)
 {
+#pragma omp parallel for
     for(int i = 0; i < 2; i++) {
         for(int j = 0; j < m.cols; ++j){
             m.at(i, j) = 0;
             m.at(m.rows - i - 1, j) = 0;
         }
     }
+#pragma omp parallel for
     for(int i = 0; i < m.rows; i++) {
         for(int j = 0; j < m.cols; j += 256){
             m.at(i, j + 0) = 0;

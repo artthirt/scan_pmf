@@ -171,31 +171,144 @@
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="8" column="1">
-        <widget class="QDoubleSpinBox" name="dsbAngleEnd">
-         <property name="maximum">
-          <double>999999.000000000000000</double>
-         </property>
-         <property name="value">
-          <double>360.000000000000000</double>
+       <item row="12" column="0">
+        <widget class="QCheckBox" name="chbUseNeededWidth">
+         <property name="text">
+          <string>Use Width Rectangle
+for output result</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
-        <widget class="QCheckBox" name="chbUseThreshold">
+       <item row="9" column="0">
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="cbFuncion">
+         <item>
+          <property name="text">
+           <string>sqr</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>sqrt</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>sin</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QCheckBox" name="chbUseNonLinear">
          <property name="text">
-          <string>Use threshold (0-1)</string>
+          <string>Use NonLinear Function</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QCheckBox" name="chbUseGaussian">
+         <property name="text">
+          <string>Use Gaussian Filter</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QCheckBox" name="chbUseFilter">
+         <property name="text">
+          <string>Use Filter</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>Default Median</string>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="0">
+        <widget class="QSpinBox" name="sbXRect">
+         <property name="maximum">
+          <number>999999</number>
+         </property>
+         <property name="value">
+          <number>1178</number>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="0">
+        <widget class="QSpinBox" name="sbWRect">
+         <property name="maximum">
+          <number>999999</number>
+         </property>
+         <property name="value">
+          <number>540</number>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Width</string>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>X</string>
+         </property>
+        </widget>
+       </item>
+       <item row="21" column="0">
+        <widget class="QCheckBox" name="chbShowLine">
+         <property name="text">
+          <string>Show Line (Y Offset)</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Filter Kernel size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="20" column="0">
+        <widget class="Line" name="line_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QSpinBox" name="sbKernelSize">
+         <property name="minimum">
+          <number>3</number>
+         </property>
+         <property name="singleStep">
+          <number>2</number>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
        <item row="13" column="1">
-        <widget class="QLabel" name="label_8">
-         <property name="text">
-          <string>Y</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="1">
         <widget class="QDoubleSpinBox" name="dsbTresh">
          <property name="minimum">
           <double>0.000000000000000</double>
@@ -211,93 +324,21 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
-        <widget class="Line" name="line_2">
+       <item row="20" column="1">
+        <widget class="Line" name="line_6">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="0">
-        <widget class="QCheckBox" name="chbShowLine">
-         <property name="text">
-          <string>Show Line (Y Offset)</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="0">
-        <widget class="QSpinBox" name="sbWRect">
-         <property name="maximum">
-          <number>999999</number>
-         </property>
-         <property name="value">
-          <number>540</number>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QCheckBox" name="chbUseGaussian">
-         <property name="text">
-          <string>Use Gaussian Filter</string>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QSpinBox" name="sbYRect">
-         <property name="maximum">
-          <number>999999</number>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="Line" name="line_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QSpinBox" name="sbNeededWidth">
-         <property name="maximum">
-          <number>9999999</number>
-         </property>
-         <property name="value">
-          <number>540</number>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="chbUseFilter">
-         <property name="text">
-          <string>Use Filter</string>
          </property>
         </widget>
        </item>
        <item row="7" column="1">
-        <widget class="QDoubleSpinBox" name="dsbAngleStart">
-         <property name="maximum">
-          <double>9999999.000000000000000</double>
+        <widget class="QSpinBox" name="sbIterFilter">
+         <property name="minimum">
+          <number>1</number>
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Angle Range</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Iterations</string>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="1">
+       <item row="19" column="1">
         <widget class="QSpinBox" name="sbHRect">
          <property name="maximum">
           <number>999999</number>
@@ -307,41 +348,35 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
-        <widget class="QLabel" name="label_10">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Height</string>
+          <string>Maximum</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
-        <widget class="Line" name="line">
+       <item row="3" column="0">
+        <widget class="Line" name="line_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="14" column="0">
-        <widget class="QSpinBox" name="sbXRect">
-         <property name="maximum">
-          <number>999999</number>
-         </property>
-         <property name="value">
-          <number>1178</number>
+       <item row="10" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Angle Range</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QSpinBox" name="sbKernelSize">
-         <property name="minimum">
-          <number>3</number>
-         </property>
-         <property name="singleStep">
-          <number>2</number>
+       <item row="16" column="1">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Y</string>
          </property>
         </widget>
        </item>
-       <item row="18" column="1">
+       <item row="21" column="1">
         <widget class="QDoubleSpinBox" name="dsbYOffset">
          <property name="minimum">
           <double>-10.000000000000000</double>
@@ -354,31 +389,62 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>Width</string>
+       <item row="10" column="1">
+        <widget class="QDoubleSpinBox" name="dsbAngleStart">
+         <property name="maximum">
+          <double>9999999.000000000000000</double>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="Line" name="line_3">
+       <item row="3" column="1">
+        <widget class="Line" name="line_4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="13" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>X</string>
+       <item row="12" column="1">
+        <widget class="QSpinBox" name="sbNeededWidth">
+         <property name="maximum">
+          <number>9999999</number>
+         </property>
+         <property name="value">
+          <number>540</number>
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_5">
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Filter Kernel size</string>
+          <string>Iterations</string>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="0">
+        <widget class="QCheckBox" name="chbUseThreshold">
+         <property name="text">
+          <string>Use threshold (0-1)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="1">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Height</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0">
+        <widget class="QCheckBox" name="chbUseRect">
+         <property name="text">
+          <string>Use Rect</string>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="1">
+        <widget class="QSpinBox" name="sbYRect">
+         <property name="maximum">
+          <number>999999</number>
          </property>
         </widget>
        </item>
@@ -392,53 +458,33 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
-        <widget class="QSpinBox" name="sbIterFilter">
+       <item row="11" column="1">
+        <widget class="QDoubleSpinBox" name="dsbAngleEnd">
+         <property name="maximum">
+          <double>999999.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>360.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Sub</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="sbSubtract">
          <property name="minimum">
-          <number>1</number>
+          <number>-9999999</number>
          </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Maximum</string>
+         <property name="maximum">
+          <number>9999999</number>
          </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLabel" name="label_11">
-         <property name="text">
-          <string>Default Median</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0">
-        <widget class="QCheckBox" name="chbUseRect">
-         <property name="text">
-          <string>Use Rect</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QCheckBox" name="chbUseNeededWidth">
-         <property name="text">
-          <string>Use Width Rectangle
-for output result</string>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="0">
-        <widget class="Line" name="line_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="1">
-        <widget class="Line" name="line_6">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+         <property name="value">
+          <number>0</number>
          </property>
         </widget>
        </item>

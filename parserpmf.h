@@ -1,6 +1,10 @@
 #ifndef PARSERPMF_H
 #define PARSERPMF_H
 
+#define _USE_MATH_DEFINES
+
+#include <cmath>
+
 #include <QVector>
 #include <QRect>
 #include <cstdint>
@@ -120,6 +124,7 @@ public:
     void setNeededWidth(int w);
     void setRect(const QRect& rect);
     void setMax(float val);
+    void setSub(float val);
     void setRemove256RemoveLine(bool val);
     void setThreshold(float val);
     void setThresholdAsDynamicRange(bool val);
@@ -127,6 +132,14 @@ public:
     void setKernelSize(int val);
     void setUseMedianFilter(bool val);
     void setUseNonLinearLut(bool val);
+    /**
+     * @brief setSetNonLinearFun
+     * 0 - sqr
+     * 1 - sqrt
+     * 2 - sin
+     * @param fun
+     */
+    void setSetNonLinearFun(int fun);
 
     void setSaveDir(const QString& dir){
         mSaveDir = dir;
@@ -147,6 +160,7 @@ private:
     bool mUseMask = false;
     matrixus_t mMask;
     float mMax = -1;
+    float mSub = 0;
     float mMaximumMask = 0;
     QString mSaveDir = "data/";
     float mAngleRange[2] = {0, 0};
@@ -158,6 +172,7 @@ private:
     bool mUseMedian = true;
     bool mUseNonLinearLut = false;
     float mProgress = 0;
+    int mFunction = 0;
 
     QStringList mFilesOutput;
 

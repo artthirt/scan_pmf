@@ -278,6 +278,7 @@ void setValue(QSettings& settings, const QString&  param, QWidget* w, QVariant d
     QCheckBox * v1 = dynamic_cast<QCheckBox*>(w);
     QSpinBox * v2 = dynamic_cast<QSpinBox*>(w);
     QDoubleSpinBox * v3 = dynamic_cast<QDoubleSpinBox*>(w);
+    QComboBox * v4 = dynamic_cast<QComboBox*>(w);
 
     def = settings.value(param, def);
 
@@ -289,6 +290,9 @@ void setValue(QSettings& settings, const QString&  param, QWidget* w, QVariant d
     }
     if(v3){
         v3->setValue(def.toFloat());
+    }
+    if(v4){
+        v4->setCurrentIndex(def.toInt());
     }
 }
 
@@ -319,6 +323,10 @@ void MainWindow::loadSettings()
     setValue(settings, "var16", ui->chbUseNeededWidth, false);
     setValue(settings, "var17", ui->chbUseRect, false);
     setValue(settings, "var18", ui->chbUseThreshold, false);
+    setValue(settings, "var19", ui->sbSubtract, 0);
+    setValue(settings, "var20", ui->chbUseNonLinear, 0);
+    setValue(settings, "var21", ui->cbFuncion, 0);
+
 }
 
 void MainWindow::saveSettings()
@@ -348,6 +356,9 @@ void MainWindow::saveSettings()
     settings.setValue("var16", ui->chbUseNeededWidth->isChecked());
     settings.setValue("var17", ui->chbUseRect->isChecked());
     settings.setValue("var18", ui->chbUseThreshold->isChecked());
+    settings.setValue("var19", ui->sbSubtract->value());
+    settings.setValue("var20", ui->chbUseNonLinear->isChecked());
+    settings.setValue("var21", ui->cbFuncion->currentIndex());
 }
 
 void MainWindow::on_listViewInputs_doubleClicked(const QModelIndex &index)
@@ -369,9 +380,16 @@ void MainWindow::on_pbStart_clicked()
         mWorker->parser->setUseFilter(ui->chbUseFilter->isChecked());
         mWorker->parser->setBlurIter(ui->sbIterFilter->value());
         mWorker->parser->setKernelSize(ui->sbKernelSize->value());
+        mWorker->parser->setMax(ui->sbMaximum->value());
+        mWorker->parser->setRemove256RemoveLine(true);
+        mWorker->parser->setUseNonLinearLut(ui->chbUseNonLinear->isChecked());
+        mWorker->parser->setSetNonLinearFun(ui->cbFuncion->currentIndex());
+        mWorker->parser->setSub(ui->sbSubtract->value());
         mWorker->parser->setAngleRange(ui->dsbAngleStart->value(), ui->dsbAngleEnd->value());
         if(ui->chbUseNeededWidth->isChecked()){
             mWorker->parser->setNeededWidth(ui->sbNeededWidth->value());
+        }else{
+            mWorker->parser->setNeededWidth(0);
         }
         if(ui->chbUseRect->isChecked()){
             QRect rect;
@@ -380,6 +398,8 @@ void MainWindow::on_pbStart_clicked()
             rect.setWidth(ui->sbWRect->value());
             rect.setHeight(ui->sbHRect->value());
             mWorker->parser->setRect(rect);
+        }else{
+            mWorker->parser->setRect(QRect());
         }
         mWorker->parser->setThreshold(ui->chbUseThreshold->isChecked()? ui->dsbTresh->value() : 0);
 
