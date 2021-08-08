@@ -435,3 +435,15 @@ void MainWindow::on_dsbYOffset_valueChanged(double arg1)
     ui->widgetOutput->setYOffsetLine(arg1);
 }
 
+
+void MainWindow::on_listViewOutputs_clicked(const QModelIndex &index)
+{
+    on_listViewOutputs_doubleClicked(index);
+}
+
+
+void MainWindow::on_listViewInputs_clicked(const QModelIndex &index)
+{
+    on_listViewInputs_doubleClicked(index);
+}
+

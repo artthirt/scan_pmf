@@ -42,6 +42,10 @@ private slots:
 
     void on_dsbYOffset_valueChanged(double arg1);
 
+    void on_listViewOutputs_clicked(const QModelIndex &index);
+
+    void on_listViewInputs_clicked(const QModelIndex &index);
+
 private:
     Ui::MainWindow *ui;
 
