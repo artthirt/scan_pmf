@@ -9,7 +9,11 @@
 
 #include "mat.h"
 
+#include "globj.h"
+
+#ifndef GLOBJ_H
 typedef QOpenGLFunctions_4_0_Core OpenGLFunctions;
+#endif
 
 class OutputImage: public QOpenGLWidget, public OpenGLFunctions
 {
@@ -28,6 +32,10 @@ public:
     QString info() const { return mInfo; }
     int maxDimensionSize() const { return mMaxDimensionSize; }
 
+    void setShowLine(bool use);
+    void setYOffsetLine(float val);
+    void setXOffsetLine(float val);
+
 signals:
     void initialize();
 
@@ -43,6 +51,11 @@ private:
     QMatrix4x4 mModel;
     QMatrix4x4 mProj;
     QMatrix4x4 mMVP;
+
+    globj mLine;
+    bool mShowLine = true;
+    float mYOffset = 0;
+    float mXOffset = 0;
 
     Mat mImage;
 
@@ -88,6 +101,7 @@ private:
     void drawTexture();
     void generateTexture();
     void setViewport(float w, float h);
+    void updateLine();
     // QOpenGLWidget interface
 protected:
     void initializeGL() override;

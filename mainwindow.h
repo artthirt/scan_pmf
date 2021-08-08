@@ -38,6 +38,10 @@ private slots:
 
     void on_listViewOutputs_doubleClicked(const QModelIndex &index);
 
+    void on_chbShowLine_clicked(bool checked);
+
+    void on_dsbYOffset_valueChanged(double arg1);
+
 private:
     Ui::MainWindow *ui;
 

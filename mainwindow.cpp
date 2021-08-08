@@ -299,6 +299,7 @@ void MainWindow::loadSettings()
     mFileDir = settings.value("filedir").toString();
     mMaskFile = settings.value("filemask").toString();
     mFileList = settings.value("filelist").toStringList();
+    mFileOutputList = settings.value("fileoutlist").toStringList();
 
     setValue(settings, "var01", ui->sbIterFilter, 1);
     setValue(settings, "var02", ui->sbKernelSize, 3);
@@ -327,6 +328,7 @@ void MainWindow::saveSettings()
     settings.setValue("filedir", mFileDir);
     settings.setValue("filemask", mMaskFile);
     settings.setValue("filelist", mFileList);
+    settings.setValue("fileoutlist", mFileOutputList);
 
     settings.setValue("var01", ui->sbIterFilter->value());
     settings.setValue("var02", ui->sbKernelSize->value());
@@ -421,3 +423,15 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
     return QMainWindow::eventFilter(watched, event);
 }
+
+void MainWindow::on_chbShowLine_clicked(bool checked)
+{
+    ui->widgetOutput->setShowLine(checked);
+}
+
+
+void MainWindow::on_dsbYOffset_valueChanged(double arg1)
+{
+    ui->widgetOutput->setYOffsetLine(arg1);
+}
+

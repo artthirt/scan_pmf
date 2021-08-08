@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>res/obj.frag</file>
         <file>res/obj.vert</file>
+        <file>res/obj2.frag</file>
+        <file>res/obj2.vert</file>
     </qresource>
 </RCC>

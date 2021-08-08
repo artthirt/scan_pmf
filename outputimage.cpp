@@ -29,6 +29,36 @@ void OutputImage::setEV(float ev)
     mIsUpdate = true;
 }
 
+void OutputImage::setShowLine(bool use)
+{
+    mShowLine = use;
+    mIsUpdate = true;
+}
+
+void OutputImage::setYOffsetLine(float val)
+{
+    mYOffset = val;
+    updateLine();
+}
+
+void OutputImage::setXOffsetLine(float val)
+{
+    mXOffset = val;
+    updateLine();
+}
+
+void OutputImage::updateLine()
+{
+    float pts[] = {
+        -1, mYOffset, 0,
+        1, mYOffset, 0,
+        mXOffset, -1, 0,
+        mXOffset, 1, 0,
+    };
+    mLine.setPts(pts, 12);
+    mIsUpdate = true;
+}
+
 void OutputImage::onTimeout()
 {
     if(!mIsInit)
@@ -119,6 +149,11 @@ void OutputImage::drawTexture()
     glDisable(GL_TEXTURE_2D);
 
     mProg.release();
+
+    if(mShowLine){
+        mLine.setColor(1, 1, 1, 1);
+        mLine.drawGL(GL_LINES, mMVP);
+    }
 }
 
 void OutputImage::generateTexture()
@@ -256,6 +291,10 @@ void OutputImage::initializeGL()
     mInfo += "\n";
     mInfo += QString("Maximum texture size dimension: %1").arg(w);
     mMaxDimensionSize = w;
+
+    mLine.init(this);
+    updateLine();
+    mLine.setColor(1, 1, 1, 1);
 
     mIsInit = true;
 
