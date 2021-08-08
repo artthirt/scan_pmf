@@ -5,6 +5,9 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QSettings>
+#include <QEvent>
+#include <QKeyEvent>
+#include <QItemSelectionModel>
 
 #include "outputimage.h"
 
@@ -175,6 +178,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&mTimer, &QTimer::timeout, this, &MainWindow::onTimeout);
     mTimer.start(200);
 
+    ui->listViewInputs->installEventFilter(this);
+    ui->listViewOutputs->installEventFilter(this);
+
     setWindowState(Qt::WindowMaximized);
 }
 
@@ -192,6 +198,7 @@ void MainWindow::showStatus(const QString msg, float val)
         ui->statusbar->showMessage(msg);
 
         if(val == 1){
+            ui->progressBarProcess->setValue(100);
             mFileOutputList = mWorker->filesOutput();
             updateModel();
         }
@@ -266,6 +273,25 @@ void MainWindow::updateModel()
     }
 }
 
+void setValue(QSettings& settings, const QString&  param, QWidget* w, QVariant def = QVariant())
+{
+    QCheckBox * v1 = dynamic_cast<QCheckBox*>(w);
+    QSpinBox * v2 = dynamic_cast<QSpinBox*>(w);
+    QDoubleSpinBox * v3 = dynamic_cast<QDoubleSpinBox*>(w);
+
+    def = settings.value(param, def);
+
+    if(v1){
+        v1->setChecked(def.toBool());
+    }
+    if(v2){
+        v2->setValue(def.toInt());
+    }
+    if(v3){
+        v3->setValue(def.toFloat());
+    }
+}
+
 void MainWindow::loadSettings()
 {
     QSettings settings("settings.ini", QSettings::IniFormat);
@@ -273,6 +299,25 @@ void MainWindow::loadSettings()
     mFileDir = settings.value("filedir").toString();
     mMaskFile = settings.value("filemask").toString();
     mFileList = settings.value("filelist").toStringList();
+
+    setValue(settings, "var01", ui->sbIterFilter, 1);
+    setValue(settings, "var02", ui->sbKernelSize, 3);
+    setValue(settings, "var03", ui->sbMaximum, 255);
+    setValue(settings, "var04", ui->sbNeededWidth, 540);
+    setValue(settings, "var05", ui->sbXRect, 1178);
+    setValue(settings, "var06", ui->sbYRect, 0);
+    setValue(settings, "var07", ui->sbWRect, 540);
+    setValue(settings, "var08", ui->sbHRect, 256);
+    setValue(settings, "var09", ui->dsbAngleEnd, 360);
+    setValue(settings, "var10", ui->dsbAngleStart, 0);
+    setValue(settings, "var11", ui->dsbTresh, 0);
+    setValue(settings, "var12", ui->chbUseFilter, false);
+    setValue(settings, "var13", ui->chbUseGaussian, false);
+    setValue(settings, "var14", ui->chbUseInvert, false);
+    setValue(settings, "var15", ui->chbUseMask, false);
+    setValue(settings, "var16", ui->chbUseNeededWidth, false);
+    setValue(settings, "var17", ui->chbUseRect, false);
+    setValue(settings, "var18", ui->chbUseThreshold, false);
 }
 
 void MainWindow::saveSettings()
@@ -282,8 +327,26 @@ void MainWindow::saveSettings()
     settings.setValue("filedir", mFileDir);
     settings.setValue("filemask", mMaskFile);
     settings.setValue("filelist", mFileList);
-}
 
+    settings.setValue("var01", ui->sbIterFilter->value());
+    settings.setValue("var02", ui->sbKernelSize->value());
+    settings.setValue("var03", ui->sbMaximum->value());
+    settings.setValue("var04", ui->sbNeededWidth->value());
+    settings.setValue("var05", ui->sbXRect->value());
+    settings.setValue("var06", ui->sbYRect->value());
+    settings.setValue("var07", ui->sbWRect->value());
+    settings.setValue("var08", ui->sbHRect->value());
+    settings.setValue("var09", ui->dsbAngleEnd->value());
+    settings.setValue("var10", ui->dsbAngleStart->value());
+    settings.setValue("var11", ui->dsbTresh->value());
+    settings.setValue("var12", ui->chbUseFilter->isChecked());
+    settings.setValue("var13", ui->chbUseGaussian->isChecked());
+    settings.setValue("var14", ui->chbUseInvert->isChecked());
+    settings.setValue("var15", ui->chbUseMask->isChecked());
+    settings.setValue("var16", ui->chbUseNeededWidth->isChecked());
+    settings.setValue("var17", ui->chbUseRect->isChecked());
+    settings.setValue("var18", ui->chbUseThreshold->isChecked());
+}
 
 void MainWindow::on_listViewInputs_doubleClicked(const QModelIndex &index)
 {
@@ -293,7 +356,6 @@ void MainWindow::on_listViewInputs_doubleClicked(const QModelIndex &index)
         mWorker->loadImage(fileName, id);
     }
 }
-
 
 void MainWindow::on_pbStart_clicked()
 {
@@ -323,7 +385,6 @@ void MainWindow::on_pbStart_clicked()
     }
 }
 
-
 void MainWindow::on_listViewOutputs_doubleClicked(const QModelIndex &index)
 {
     if(mWorker){
@@ -333,3 +394,30 @@ void MainWindow::on_listViewOutputs_doubleClicked(const QModelIndex &index)
     }
 }
 
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if(watched == ui->listViewInputs){
+        if(event->type() == QEvent::KeyRelease){
+            auto sm = ui->listViewInputs->selectionModel();
+            auto r = sm->selectedIndexes();
+            if(r.size() == 1){
+                int row = r[0].row();
+                qDebug("input %d", row);
+                on_listViewInputs_doubleClicked(r[0]);
+            }
+        }
+    }
+    if(watched == ui->listViewOutputs){
+        if(event->type() == QEvent::KeyRelease){
+            auto sm = ui->listViewOutputs->selectionModel();
+            auto r = sm->selectedIndexes();
+            if(r.size() == 1){
+                int row = r[0].row();
+                qDebug("input %d", row);
+                on_listViewOutputs_doubleClicked(r[0]);
+            }
+        }
+    }
+
+    return QMainWindow::eventFilter(watched, event);
+}
