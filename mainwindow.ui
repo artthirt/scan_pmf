@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>969</width>
-    <height>600</height>
+    <width>1140</width>
+    <height>1029</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>969</width>
+     <width>1140</width>
      <height>21</height>
     </rect>
    </property>
@@ -51,6 +51,13 @@
       <widget class="QPushButton" name="pbShowMask">
        <property name="text">
         <string>Show Mask</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_14">
+       <property name="text">
+        <string>Name of Mask File</string>
        </property>
       </widget>
      </item>
@@ -489,6 +496,14 @@ for output result</string>
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_15">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scheme of work (work only pgm and pmf files):&lt;br/&gt;1. If you have FFC file then push the button &amp;quot;Open Mask&amp;quot;&lt;br/&gt;2. You can see this mask by push the button &amp;quot;Show Mask&amp;quot;&lt;br/&gt;3. Select the file of files with object by puth the button &amp;quot;Open Images&amp;quot;&lt;br/&gt;4. To Apply mask to object image check box &amp;quot;Use mask&amp;quot;&lt;br/&gt;5. To Invert values of image check box &amp;quot;Use invert&lt;br/&gt;6 Set &lt;span style=&quot; font-weight:600;&quot;&gt;Maximum&lt;/span&gt; value to regulation output results (necessarily)&lt;br/&gt;7 Set Sub value of you want to remove some background values (Image - Sub)&lt;br/&gt;8 Select Nonlinar function to change images value for select function&lt;br/&gt;9 Set Use filter to apply Median or Gaussian filter (if check box &amp;quot;Use Gaussian Filter&amp;quot;)&lt;br/&gt;10 Set Iterations to select how ones to repeat filter&lt;br/&gt;11 Set Filter Kernel Size &lt;br/&gt;12 Set Angle range to generate postfix of output files&lt;br/&gt;13 Set Width rectangle for output image &lt;br/&gt;14 Set threshold to remove value less then Maximum*Thresuld&lt;br/&gt;15 Set Use Rect to select rectangle for output.&lt;br/&gt;16 Set Show Line to show chest by center of output widget&lt;br/&gt;17 Select Save Directory (Above the button &amp;quot;Start Generate&amp;quot;)&lt;br/&gt;18 &lt;span style=&quot; font-weight:600;&quot;&gt;PUSH&lt;/span&gt; &amp;quot;Start Generate&amp;quot; to generate output images&lt;br/&gt;
+19 You can select files in lists to show image in output widget&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="verticalSpacer">

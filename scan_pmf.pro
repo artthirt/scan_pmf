@@ -1,5 +1,11 @@
 QT += gui widgets opengl
 
+CONFIG(debug, debug|release){
+    DESTDIR = $$OUT_PWD/../bin/debug
+}else{
+    DESTDIR = $$OUT_PWD/../bin/release
+}
+
 CONFIG += c++11 console
 CONFIG -= app_bundle
 
@@ -34,3 +40,29 @@ FORMS += \
 
 RESOURCES += \
     res.qrc
+
+greaterThan(QT_MAJOR_VERSION, 4) {
+    TARGET_ARCH=$${QT_ARCH}
+} else {
+    TARGET_ARCH=$${QMAKE_HOST.arch}
+}
+
+contains(TARGET_ARCH, x86_64) {
+    BITS = 64
+    win32: PLATFORM = x64
+} else {
+    BITS = 32
+    win32: PLATFORM = win32
+}
+
+win32{
+    defineTest(deployApp){
+        win32: EXT = .exe
+        DESTFILE = $$DESTDIR/$$TARGET$$EXT
+        DESTFILE = \"$$quote($$shell_path($$DESTFILE))\"
+        QMAKE_POST_LINK += $$[QT_INSTALL_BINS]/windeployqt --qmldir $$PWD/qml $$DESTFILE $$escape_expand(\\n\\t)
+        export(QMAKE_POST_LINK)
+    }
+
+    deployApp()
+}

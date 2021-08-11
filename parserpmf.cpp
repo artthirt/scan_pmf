@@ -506,6 +506,10 @@ void ParserPmf::applyMask(matrixus_t &im)
         for(int j = 0; j < mMask.cols; ++j){
             float M = mMask.at(i, j);
             //M = mMax - M;
+            if(M == 0){
+                im.at(i, j) = mMax;
+                continue;
+            }
             M = fmaxf(1, M);
             float var = im.at(i, j) / M;
             im.at(i, j) = mMax * std::max(0.f, var);
