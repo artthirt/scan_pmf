@@ -26,8 +26,14 @@ void globj::init(OpenGLFunctions *self)
         2, 3, 0,
     };
 
+    const GLubyte* ver = self->glGetString(GL_VERSION);
+
     mProg.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/res/obj2.vert");
-    mProg.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/obj2.frag");
+    if(QString((char*)ver).toLower().indexOf("opengl es") >= 0){
+        mProg.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/obj2_angle.frag");
+    }else{
+        mProg.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/obj2.frag");
+    }
     mProg.link();
     qDebug("Log:\n<<<\n%s\n>>>", mProg.log().toLatin1().data());
 

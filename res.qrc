@@ -4,5 +4,7 @@
         <file>res/obj.vert</file>
         <file>res/obj2.frag</file>
         <file>res/obj2.vert</file>
+        <file>res/obj_angle.frag</file>
+        <file>res/obj2_angle.frag</file>
     </qresource>
 </RCC>

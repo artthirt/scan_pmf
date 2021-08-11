@@ -77,6 +77,9 @@ public:
         });
     }
     void loadMask(const QString& fn, int id){
+        if(!QFile::exists(fn))
+            return;
+
         QTimer::singleShot(0, this, [fn, this](){
             parser->loadMask(fn, QRect());
             auto ret = parser->mask();
@@ -123,6 +126,10 @@ public:
     void Start(const QStringList& fileList, const QString &saveDir){
         QTimer::singleShot(0, this, [this, fileList, saveDir](){
             mIsRunning = true;
+            QDir dir;
+            if(!dir.exists(saveDir)){
+                dir.mkpath(saveDir);
+            }
             parser->clearOutputDir();
             parser->setSaveDir(saveDir);
             parser->scanDirPgm(fileList, "");
@@ -172,7 +179,7 @@ MainWindow::MainWindow(QWidget *parent) :
     updateModel();
 
     if(!mMaskFile.isEmpty()){
-        mWorker->loadMask(mMaskFile, 0);
+        //mWorker->loadMask(mMaskFile, 0);
     }
 
     connect(&mTimer, &QTimer::timeout, this, &MainWindow::onTimeout);

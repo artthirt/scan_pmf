@@ -201,6 +201,7 @@ void OutputImage::generateTexture()
             glDeleteBuffers(1, &pbo_buffer);
             pbo_buffer = 0;
         }
+        qDebug("1");
 
         GLint bsize;
         glGenBuffers(1, &pbo_buffer);
@@ -266,20 +267,6 @@ void OutputImage::initializeGL()
         2, 3, 0,
     };
 
-    mProg.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/res/obj.vert");
-    mProg.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/obj.frag");
-    mProg.link();
-    qDebug("Log:\n<<<\n%s\n>>>", mProg.log().toLatin1().data());
-
-    mProg.bind();
-    mVecAttrib = mProg.attributeLocation("aPos");
-    mTexAttrib = mProg.attributeLocation("aTex");
-    mMvpInt = mProg.uniformLocation("mvp");
-    mTexSampler = mProg.uniformLocation("Tex");
-    mGammaInt = mProg.uniformLocation("Gamma");
-
-    mRGBInt = mProg.uniformLocation("uRgb");
-
     int w = 0;
     const GLubyte* ver = glGetString(GL_VERSION);
     const GLubyte* ven = glGetString(GL_VENDOR);
@@ -291,6 +278,28 @@ void OutputImage::initializeGL()
     mInfo += "\n";
     mInfo += QString("Maximum texture size dimension: %1").arg(w);
     mMaxDimensionSize = w;
+
+    qDebug("%s", ver);
+    qDebug("%s", ven);
+    qDebug("%d", w);
+
+    mProg.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/res/obj.vert");
+    if(QString((char*)ver).toLower().indexOf("opengl es") >= 0){
+        mProg.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/obj_angle.frag");
+    }else{
+        mProg.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/obj.frag");
+    }
+    mProg.link();
+    qDebug("Log:\n<<<\n%s\n>>>", mProg.log().toLatin1().data());
+
+    mProg.bind();
+    mVecAttrib = mProg.attributeLocation("aPos");
+    mTexAttrib = mProg.attributeLocation("aTex");
+    mMvpInt = mProg.uniformLocation("mvp");
+    mTexSampler = mProg.uniformLocation("Tex");
+    mGammaInt = mProg.uniformLocation("Gamma");
+
+    mRGBInt = mProg.uniformLocation("uRgb");
 
     mLine.init(this);
     updateLine();

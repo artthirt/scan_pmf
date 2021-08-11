@@ -1,3 +1,4 @@
+precision mediump float;
 varying vec2 vTex;
 varying vec4 vCol;
 uniform sampler2D Tex;

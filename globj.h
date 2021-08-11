@@ -1,12 +1,12 @@
 #ifndef GLOBJ_H
 #define GLOBJ_H
 
-#include <QOpenGLFunctions_4_0_Compatibility>
+#include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLShader>
 #include <QMatrix4x4>
 
-typedef QOpenGLFunctions_4_0_Compatibility OpenGLFunctions;
+typedef QOpenGLFunctions OpenGLFunctions;
 
 struct vec4f{
     float x = 0;
