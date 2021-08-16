@@ -10,74 +10,8 @@
 #include <cstdint>
 #include <QImage>
 
-template<typename T>
-class Matrix{
-public:
-    int rows = 0;
-    int cols = 0;
-    std::vector<T> data;
+#include "matutils.h"
 
-    size_t total() const{
-        return rows * cols;
-    }
-    bool empty() const{
-        return data.empty();
-    }
-
-    void resize(int rows, int cols){
-        this->rows = rows;
-        this->cols = cols;
-        data.resize(rows * cols, 0);
-    }
-    void clear(){
-        this->rows = 0;
-        this->cols = 0;
-        data.clear();
-    }
-    T& at(int y, int x){
-        return *(reinterpret_cast<float*>(data.data()) + y * cols + x);
-    }
-    T at(int y, int x)const{
-        return *(reinterpret_cast<const float*>(data.data()) + y * cols + x);
-    }
-    float* ptr(int y = 0){
-        return reinterpret_cast<float*>(data.data()) + y * cols;
-    }
-    float* ptr(int y = 0) const{
-        return reinterpret_cast<float*>(data.data()) + y * cols;
-    }
-    T& operator[](int i){
-        return data[i];
-    }
-    T operator[](int i) const{
-        return data[i];
-    }
-
-    template<typename N>
-    void convertTo(Matrix<N>& out) const {
-        out.resize(rows, cols);
-        for(size_t i = 0; i < total(); ++i){
-            out[i] = data[i];
-        }
-    }
-
-    void threshold(T Min, T NewVal){
-        for(size_t i = 0; i < total(); ++i){
-            T val = data[i];
-            data[i] = val < Min? NewVal : val;
-        }
-    }
-    void dynamicRange(T Min, T Max, T NewMin, T NewMax){
-        for(size_t i = 0; i < total(); ++i){
-            T val = data[i];
-            val = NewMin + (val - Min) / (Max - Min) * (NewMax - NewMin);
-            data[i] = std::max(NewMin, std::min(NewMax, val));
-        }
-    }
-};
-
-typedef Matrix<float> matrixus_t;
-typedef std::vector< float > vectorus_t;
 
 class ParserPmf{
 public:
@@ -132,6 +66,8 @@ public:
     void setKernelSize(int val);
     void setUseMedianFilter(bool val);
     void setUseNonLinearLut(bool val);
+    void setUseTVDenoiser(bool val);
+    void setTVDenoiserIter(int val);
     /**
      * @brief setSetNonLinearFun
      * 0 - sqr
@@ -174,9 +110,14 @@ private:
     float mProgress = 0;
     int mFunction = 0;
 
+    bool mUseTVDenoiser = false;
+    int mTVDIter = 10;
+
     QStringList mFilesOutput;
 
     void applyRemove256(matrixus_t& m);
+
+    void applyTVD(matrixus_t& m);
 };
 
 

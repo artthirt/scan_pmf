@@ -8,6 +8,8 @@
 
 #include <fstream>
 
+#include "tvdenoiser.h"
+
 #define _USE_MATH_DEFINES
 
 #include <cmath>
@@ -283,6 +285,10 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
     if(mUseFilter){
         for(int i = 0; i < mBlurIter; ++i)
             filt = filterImage(filt);
+    }
+
+    if(mUseTVDenoiser){
+        applyTVD(filt);
     }
 
     QImage im(w, h, QImage::Format_Grayscale16);
@@ -619,6 +625,16 @@ void ParserPmf::setUseNonLinearLut(bool val)
     mUseNonLinearLut = val;
 }
 
+void ParserPmf::setUseTVDenoiser(bool val)
+{
+    mUseTVDenoiser = val;
+}
+
+void ParserPmf::setTVDenoiserIter(int val)
+{
+    mTVDIter = val;
+}
+
 void ParserPmf::setSetNonLinearFun(int fun)
 {
     mFunction = fun;
@@ -660,4 +676,14 @@ void ParserPmf::applyRemove256(matrixus_t &m)
 //                m[i][j + 1] = 0;
         }
     }
+}
+
+void ParserPmf::applyTVD(matrixus_t &m)
+{
+    TVDenoiser tvd;
+
+    matrixus_t Out;
+    tvd.setMaximum(mMax);
+    tvd.denoise(m, Out, 1, mTVDIter);
+    m = Out;
 }

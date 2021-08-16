@@ -1,0 +1,7 @@
+*.obj
+bin*
+build*
+*.pdb
+*.exe
+*.pro.*
+*.user

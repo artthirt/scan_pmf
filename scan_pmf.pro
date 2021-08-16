@@ -18,8 +18,10 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         mat.cpp \
+        matutils.cpp \
         outputimage.cpp \
-        parserpmf.cpp
+        parserpmf.cpp \
+        tvdenoiser.cpp
 
 QMAKE_CXXFLAGS += /openmp
 
@@ -32,8 +34,10 @@ HEADERS += \
     globj.h \
     mainwindow.h \
     mat.h \
+    matutils.h \
     outputimage.h \
-    parserpmf.h
+    parserpmf.h \
+    tvdenoiser.h
 
 FORMS += \
     mainwindow.ui

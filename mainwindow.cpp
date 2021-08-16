@@ -383,6 +383,8 @@ void MainWindow::on_pbStart_clicked()
 
         mWorker->parser->setUseMedianFilter(!ui->chbUseGaussian->isChecked());
         mWorker->parser->setUseMask(ui->chbUseMask->isChecked());
+        mWorker->parser->setUseTVDenoiser(ui->chbUseTvDenoiser->isChecked());
+        mWorker->parser->setTVDenoiserIter(ui->sbTVDIter->value());
         mWorker->parser->setUseInv(ui->chbUseInvert->isChecked());
         mWorker->parser->setUseFilter(ui->chbUseFilter->isChecked());
         mWorker->parser->setBlurIter(ui->sbIterFilter->value());
