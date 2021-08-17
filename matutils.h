@@ -82,8 +82,34 @@ public:
         return *this;
     }
 
-    void minMaxLoc(T& Min, T& Max){
-        T *dP = ptr(0);
+    Matrix<T>& div(const Matrix<T>& B){
+    #pragma omp parallel for
+        for(int y = 0; y < rows; ++y){
+            T *dP = ptr(y);
+            const T *dB = B.ptr(y);
+            for(int x = 0; x < cols; ++x){
+                dP[x] /= dB[x];
+            }
+        }
+
+        return *this;
+    }
+
+    Matrix<T>& add(const Matrix<T>& B){
+    #pragma omp parallel for
+        for(int y = 0; y < rows; ++y){
+            T *dP = ptr(y);
+            const T *dB = B.ptr(y);
+            for(int x = 0; x < cols; ++x){
+                dP[x] += dB[x];
+            }
+        }
+
+        return *this;
+    }
+
+    void minMaxLoc(T& Min, T& Max) const{
+        const T *dP = ptr(0);
         Min = 1e+12;
         Max = -1e+12;
         for(int i = 0; i < total(); ++i){
@@ -117,24 +143,44 @@ public:
     template<typename F>
     void forEach(F fun){
 #pragma omp parallel for
-    for(int y = 0; y < rows; ++y){
-        T *dP = ptr(y);
-        for(int x = 0; x < cols; ++x){
-            int pos[] = {y, x};
-            fun(dP[x], pos);
+        for(int y = 0; y < rows; ++y){
+            T *dP = ptr(y);
+            for(int x = 0; x < cols; ++x){
+                int pos[] = {y, x};
+                fun(dP[x], pos);
+            }
         }
     }
+
+    Matrix<T> clone() const{
+         Matrix<T> R;
+         R.resize(rows, cols);
+#pragma omp parallel for
+        for(int y = 0; y < rows; ++y){
+            const T *dO = ptr(y);
+            T *dP = R.ptr(y);
+            for(int x = 0; x < cols; ++x){
+                dP[x] = dO[x];
+            }
+        }
+        return R;
     }
 
     static Matrix<T> zeros(int rows, int cols){
         Matrix<T> ret;
         ret.resize(rows, cols);
+#pragma omp parallel for
+        for(int y = 0; y < ret.rows; ++y){
+            T *dP = ret.ptr(y);
+            for(int x = 0; x < ret.cols; ++x){
+                dP[x] = 0;
+            }
+        }
+
         return ret;
     }
     static Matrix<T> zeros(const Size& sz){
-        Matrix<T> ret;
-        ret.resize(sz.height, sz.width);
-        return ret;
+        return zeros(sz.height, sz.width);
     }
 
     static Matrix<T> ones(const Size& sz){
@@ -142,12 +188,12 @@ public:
         ret.resize(sz.height, sz.width);
 
 #pragma omp parallel for
-    for(int y = 0; y < ret.rows; ++y){
-        T *dP = ret.ptr(y);
-        for(int x = 0; x < ret.cols; ++x){
-            dP[x] = 1;
+        for(int y = 0; y < ret.rows; ++y){
+            T *dP = ret.ptr(y);
+            for(int x = 0; x < ret.cols; ++x){
+                dP[x] = 1;
+            }
         }
-    }
         return ret;
     }
 };
@@ -163,7 +209,7 @@ Matrix<T> operator/(const Matrix<T>& A, T b)
         const T *dP = A.ptr(y);
         T *dO = R.ptr(y);
         for(int x = 0; x < A.cols; ++x){
-            dO[x] = dP[x] / b;
+            dO[x] = 1.f * dP[x] / b;
         }
     }
 
@@ -182,7 +228,7 @@ Matrix<T> operator/(const Matrix<T>& A, const Matrix<T>& B)
         const T *dB = B.ptr(y);
         T *dO = R.ptr(y);
         for(int x = 0; x < A.cols; ++x){
-            dO[x] = dA[x] / dB[x];
+            dO[x] = 1.f * dA[x] / dB[x];
         }
     }
 
@@ -197,7 +243,7 @@ Matrix<T> operator+(const Matrix<T>& A, T b)
 
 #pragma omp parallel for
     for(int y = 0; y < A.rows; ++y){
-        T *dP = A.ptr(y);
+        const T *dP = A.ptr(y);
         T *dO = R.ptr(y);
         for(int x = 0; x < A.cols; ++x){
             dO[x] = dP[x] + b;
@@ -267,7 +313,19 @@ Matrix<T> operator*(const Matrix<T>& A, T b)
 template <typename T>
 Matrix<T> operator*(T b, const Matrix<T>& A)
 {
-    return operator*(A, b);
+    Matrix<T> R;
+    R.resize(A.size());
+
+#pragma omp parallel for
+    for(int y = 0; y < A.rows; ++y){
+        const T *dP = A.ptr(y);
+        T *dO = R.ptr(y);
+        for(int x = 0; x < A.cols; ++x){
+            dO[x] = dP[x] * b;
+        }
+    }
+
+    return R;
 }
 
 template <typename T>
@@ -285,6 +343,21 @@ void sqrt(const Matrix<T>& A, Matrix<T>& R)
 }
 
 template <typename T>
+void norml2(const Matrix<T>& A, const Matrix<T>& B, Matrix<T>& R)
+{
+    R.resize(A.size());
+#pragma omp parallel for
+    for(int y = 0; y < A.rows; ++y){
+        const T *dA = A.ptr(y);
+        const T *dB = B.ptr(y);
+        T *dO = R.ptr(y);
+        for(int x = 0; x < A.cols; ++x){
+            dO[x] = sqrt(dA[x] * dA[x] + dB[x] * dB[x]);
+        }
+    }
+}
+
+template <typename T>
 Matrix<T> max(const Matrix<T>& A, const Matrix<T>& B)
 {
     Matrix<T> R;
@@ -296,7 +369,7 @@ Matrix<T> max(const Matrix<T>& A, const Matrix<T>& B)
         const T *dB = B.ptr(y);
         T *dO = R.ptr(y);
         for(int x = 0; x < A.cols; ++x){
-            dO[x] = std::max(dA[x], dB[x]);
+            dO[x] = fmaxf(dA[x], dB[x]);
         }
     }
 

@@ -36,7 +36,7 @@ public:
             int max = 0;
 
             matrixus_t ret;
-            if(fn.endsWith(".pgm") || fn.endsWith(".pfm")){
+            if(1){
                 ret = parser->scanFile(fn, "", max, QRect());
                 if(ret.empty())
                     return ;
@@ -52,27 +52,36 @@ public:
                 if(mOutput){
                     mOutput->setImage(mat);
                 }
-            }else{
-                QImage image;
-                image.load(fn);
-                if(image.isNull())
-                    return;
-
-                int type = CV_8U;
-                if(image.format() == QImage::Format_RGB888){
-                    type = CV_8UC3;
-                }
-                if(image.format() == QImage::Format_Grayscale16){
-                    image.convertTo(QImage::Format_RGB888);
-                    type = CV_8UC3;
-                }
-
-                Mat mat(image.height(), image.width(), type, image.bits());
-
-                if(mOutput){
-                    mOutput->setImage(mat);
-                }
             }
+//            else{
+//                QImage image;
+//                image.load(fn);
+//                if(image.isNull())
+//                    return;
+
+//                int type = CV_8U;
+//                if(image.format() == QImage::Format_RGB888){
+//                    type = CV_8UC3;
+//                }
+//                if(image.format() == QImage::Format_RGB32
+//                        || image.format() == QImage::Format_ARGB32){
+//                    image.convertTo(QImage::Format_RGB888);
+//                    type = CV_8UC3;
+//                }
+//                if(image.format() == QImage::Format_Grayscale8){
+//                    type = CV_8UC1;
+//                }
+//                if(image.format() == QImage::Format_Grayscale16){
+//                    image.convertTo(QImage::Format_RGB888);
+//                    type = CV_8UC3;
+//                }
+
+//                Mat mat(image.height(), image.width(), type, image.bits());
+
+//                if(mOutput){
+//                    mOutput->setImage(mat);
+//                }
+//            }
 
         });
     }
@@ -233,7 +242,7 @@ void MainWindow::on_pbShowMask_clicked()
 void MainWindow::on_pbOpenImages_clicked()
 {
     QStringList sl = QFileDialog::getOpenFileNames(nullptr, "Open images", mFileDir,
-                                                    "*.pgm; *.pmf");
+                                                    "*.pgm; *.pmf; *.jpg; *.tif; *.tiff; *.png");
 
     if(!sl.empty()){
         QFileInfo ffi(sl.front());
@@ -390,7 +399,7 @@ void MainWindow::on_pbStart_clicked()
         mWorker->parser->setBlurIter(ui->sbIterFilter->value());
         mWorker->parser->setKernelSize(ui->sbKernelSize->value());
         mWorker->parser->setMax(ui->sbMaximum->value());
-        mWorker->parser->setRemove256RemoveLine(true);
+        //mWorker->parser->setRemove256RemoveLine(true);
         mWorker->parser->setUseNonLinearLut(ui->chbUseNonLinear->isChecked());
         mWorker->parser->setSetNonLinearFun(ui->cbFuncion->currentIndex());
         mWorker->parser->setSub(ui->sbSubtract->value());

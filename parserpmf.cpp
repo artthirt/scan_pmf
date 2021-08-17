@@ -75,6 +75,42 @@ matrixus_t readPgm(const std::string& fileName)
     return out;
 }
 
+template<typename T>
+void readImage(const QImage& I, matrixus_t& R)
+{
+    R = matrixus_t::zeros(I.height(), I.width());
+
+    for(int y = 0; y < R.rows; ++y){
+        const T *dI = reinterpret_cast<const T*>(I.scanLine(y));
+        float* dR = R.ptr(y);
+        for(int x = 0; x < R.cols; ++x){
+            dR[x] = dI[x];
+        }
+    }
+}
+
+matrixus_t readQImage(const QString& fileName, int& max)
+{
+    matrixus_t R;
+    QImage image;
+    image.load(fileName);
+
+    if(image.format() != QImage::Format_Grayscale8 || image.format() != QImage::Format_Grayscale16){
+        image.convertTo(QImage::Format_Grayscale8);
+    }
+    if(image.format() == QImage::Format_Grayscale8){
+        readImage<uint8_t>(image, R);
+        max = 255;
+    }else{
+        readImage<uint16_t>(image, R);
+        max = 65535;
+    }
+    return R;
+}
+
+
+///////////////////////////////////////
+
 ParserPmf::ParserPmf()
 {
 
@@ -253,6 +289,10 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
 
     matrixus_t filt = mat;
 
+    if(mUseTVDenoiser){
+        applyTVD(filt);
+    }
+
     if(mSub){
         applySub(filt, mSub);
     }
@@ -285,10 +325,6 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
     if(mUseFilter){
         for(int i = 0; i < mBlurIter; ++i)
             filt = filterImage(filt);
-    }
-
-    if(mUseTVDenoiser){
-        applyTVD(filt);
     }
 
     QImage im(w, h, QImage::Format_Grayscale16);
@@ -338,7 +374,7 @@ matrixus_t ParserPmf::scanFile(const QString &pmf, const QString &dsc, int &max,
     if(pmf.endsWith(".pgm")){
         mData = readPgm(pmf.toStdString());
         max = 255;
-    }else{
+    }else if(pmf.endsWith(".pmf")){
         QFile f(pmf);
         if(!f.open(QIODevice::ReadOnly))
             return matrixus_t();
@@ -370,6 +406,8 @@ matrixus_t ParserPmf::scanFile(const QString &pmf, const QString &dsc, int &max,
             y++;
         }
         f.close();
+    }else{
+        mData = readQImage(pmf, max);
     }
     QFileInfo fi(pmf);
     QString newfn = mSaveDir + "/image_" + fi.baseName() + ".tif";
