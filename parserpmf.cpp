@@ -289,10 +289,6 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
 
     matrixus_t filt = mat;
 
-    if(mUseTVDenoiser){
-        applyTVD(filt);
-    }
-
     if(mSub){
         applySub(filt, mSub);
     }
@@ -325,6 +321,10 @@ void ParserPmf::saveToImage(const QString &fn, const matrixus_t &mat, int max,
     if(mUseFilter){
         for(int i = 0; i < mBlurIter; ++i)
             filt = filterImage(filt);
+    }
+
+    if(mUseTVDenoiser){
+        applyTVD(filt);
     }
 
     QImage im(w, h, QImage::Format_Grayscale16);
